@@ -2,6 +2,7 @@
 #include "pico/stdlib.h"
 #include "hardware/pwm.h"
 #include "hardware/irq.h"
+#include "pico/multicore.h"
 
 #include "sstv.h"
 
@@ -25,72 +26,59 @@ static const uint8_t sine_table[] = {
     56, 57, 59, 60, 61, 63, 64, 66, 67, 68, 70, 71, 72, 74, 75, 77, 78, 80, 81, 83, 84, 86, 87, 88, 90, 91, 93, 95, 96,
     98, 99, 101, 102, 104, 105, 107, 108, 110, 111, 113, 115, 116, 118, 119, 121, 122, 124, 125};
 
-static const uint16_t SINE_TABLE_SIZE = sizeof(sine_table);
-static const uint16_t SSTV_SAMPLE_RATE = SYS_CLK_HZ / ((SSTV_PWM_WRAP + 1) * (SSTV_PWM_PSC + 1));
+static uint sstv_pwm_pin_slice = 0;
+static uint sstv_pwm_channel = 0;
 
-static const uint16_t PHASE_INC_SYNC = ((SINE_TABLE_SIZE * SSTV_SYNC_TONE) << 7) / SSTV_SAMPLE_RATE;
-static const uint16_t PHASE_INC_BLACK = ((SINE_TABLE_SIZE * SSTV_TONE_BLACK) << 7) / SSTV_SAMPLE_RATE;
-static const uint16_t PHASE_INC_WHITE = ((SINE_TABLE_SIZE * SSTV_TONE_WHITE) << 7) / SSTV_SAMPLE_RATE;
+volatile static uint32_t phase = 0;
+volatile static uint32_t phase_inc = SSTV_FT(1000);
+volatile static bool phase_changed = false;
 
-static const uint32_t SAMPLES_PER_TICK = (SSTV_SAMPLE_RATE << 8) * (SSTV_TICK / 1000.0f);
-
-volatile static uint16_t phase = 0;
-volatile static uint16_t phase_inc = 0;
-volatile static uint32_t sample = 0;
-volatile static uint8_t tick_count = 0;
-
-static uint sstv_pin_slice = 0;
-bool in_line = false;
-
-static void sstv_pwm_irq_handler()
-{
-    // Clear interrupt
-    pwm_clear_irq(sstv_pin_slice);
-    pwm_set_chan_level(sstv_pin_slice, PWM_CHAN_B, sine_table[(phase >> 7) + ((phase & (1 << 6)) >> 6)]);
+static void phase_inc_handler(){
+    hw_clear_bits(&timer_hw->intr, 1u << SSTV_ALARM_NUM);
 
     phase += phase_inc;
-    if (phase >= (SINE_TABLE_SIZE << 7)) phase -= (SINE_TABLE_SIZE << 7);
-    
-    if (sample < (1 << 8)){
-        if(tick_count==7) phase_inc=PHASE_INC_BLACK;
-        else if(tick_count==10) phase_inc=PHASE_INC_WHITE;
-        if(tick_count==100){
-            phase_inc=PHASE_INC_SYNC;
-            tick_count = 0;
+    phase_changed = true;
+
+    timer_hw->alarm[SSTV_ALARM_NUM] = (uint32_t) (timer_hw->timerawl + SSTV_ALARM_TIME_MS);
+}
+
+static void sampling_thread(){
+    while(true){
+        if(phase_changed){
+            phase_changed = false;
+
+            pwm_set_chan_level(sstv_pwm_pin_slice, PWM_CHAN_B, sine_table[(uint8_t)((phase>>24) & 0xFF)]); // use last 8 bits of phase for pwm value
         }
-        tick_count++;
     }
-   //phase_inc = PHASE_INC_WHITE;
-
-    sample += (1 << 8);
-    if (sample >= SAMPLES_PER_TICK) sample -= SAMPLES_PER_TICK;
-
 }
 
 void start_sstv()
 {
     gpio_set_function(SSTV_PIN, GPIO_FUNC_PWM);
-    sstv_pin_slice = pwm_gpio_to_slice_num(SSTV_PIN);
+    sstv_pwm_pin_slice = pwm_gpio_to_slice_num(SSTV_PIN);
+    sstv_pwm_channel = pwm_gpio_to_channel(SSTV_PIN);
 
-    pwm_set_clkdiv(sstv_pin_slice, SSTV_PWM_PSC);
-    pwm_set_wrap(sstv_pin_slice, SSTV_PWM_WRAP);
+    pwm_set_clkdiv(sstv_pwm_pin_slice, SSTV_PWM_CLKDIV);
+    pwm_set_wrap(sstv_pwm_pin_slice, SSTV_PWM_WRAP);
 
-    // pwm_set_chan_level(sstv_pin_slice, PWM_CHAN_B, 0);
-    pwm_set_counter(sstv_pin_slice, 0);
+    // pwm_set_chan_level(sstv_pwm_pin_slice, sstv_pwm_channel, 0);
+    pwm_set_counter(sstv_pwm_pin_slice, 0);
 
-    pwm_clear_irq(sstv_pin_slice);
-    pwm_set_irq_enabled(sstv_pin_slice, true);
-    irq_set_exclusive_handler(PWM_IRQ_WRAP, sstv_pwm_irq_handler);
-    irq_set_enabled(PWM_IRQ_WRAP, true);
+    hw_set_bits(&timer_hw->inte, 1u << SSTV_ALARM_NUM);
+    irq_set_exclusive_handler(SSTV_ALARM_IRQ, phase_inc_handler);
 
-    pwm_set_enabled(sstv_pin_slice, true);
+    timer_hw->alarm[SSTV_ALARM_NUM] = (uint32_t) (timer_hw->timerawl); // trigger first alarm immediately
 
-    sstv_pwm_irq_handler();
+    pwm_set_enabled(sstv_pwm_pin_slice, true);
+    irq_set_enabled(SSTV_ALARM_IRQ, true);
+
+    multicore_reset_core1();
+    multicore_launch_core1(sampling_thread);
 }
 
 void stop_sstv()
 {
-    pwm_set_enabled(sstv_pin_slice, false);
-    pwm_set_irq_enabled(sstv_pin_slice, false);
-    irq_set_enabled(PWM_IRQ_WRAP, false);
+    pwm_set_enabled(sstv_pwm_pin_slice, false);
+    irq_set_enabled(SSTV_ALARM_IRQ, false);
+    multicore_reset_core1();
 }

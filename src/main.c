@@ -3,13 +3,17 @@
 #include "hardware/pwm.h"
 #include "hardware/irq.h"
 
+#include "pico/multicore.h"
+
 #include "sstv.h"
 
 int main() {
     stdio_init_all();
-    
+
     start_sstv();
+
     while (true) {
-        tight_loop_contents();
+        printf("test!\n");
+        sleep_ms(100);
     }
 }
