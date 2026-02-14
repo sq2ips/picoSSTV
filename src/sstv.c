@@ -47,7 +47,8 @@ static void sampling_thread(){
         if(phase_changed){
             phase_changed = false;
 
-            pwm_set_chan_level(sstv_pwm_pin_slice, PWM_CHAN_B, sine_table[(uint8_t)((phase>>24) & 0xFF)]); // use last 8 bits of phase for pwm value
+            
+            pwm_set_chan_level(sstv_pwm_pin_slice, PWM_CHAN_B, sine_table[(uint16_t)((phase>>23) & 0x1FF)]); // use last 8 bits of phase for pwm value
         }
     }
 }
