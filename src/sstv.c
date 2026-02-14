@@ -33,6 +33,21 @@ volatile static uint32_t phase = 0;
 volatile static uint32_t phase_inc = SSTV_FT(1000);
 volatile static bool phase_changed = false;
 
+volatile static uint16_t raster_x = 0;
+volatile static uint16_t raster_y = 0;
+volatile static uint8_t sstv_seq = 0;
+static double sstv_time = 0;
+static double sstv_next = 0;
+static uint8_t vis_sr = SSTV_VIS_CODE;
+static uint8_t vis_parity;
+static uint8_t header_ptr = 0;
+static bool sstv_running = false;
+
+static uint8_t *buff = NULL;
+static uint32_t buff_len = 0;
+
+#define linear_map(x, in_min, in_max, out_min, out_max) ((x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min)
+
 static void phase_inc_handler(){
     hw_clear_bits(&timer_hw->intr, 1u << SSTV_ALARM_NUM);
 
@@ -45,16 +60,100 @@ static void phase_inc_handler(){
 static void sampling_thread(){
     while(true){
         if(phase_changed){
-            phase_changed = false;
-
-            
+            phase_changed = false;            
             pwm_set_chan_level(sstv_pwm_pin_slice, PWM_CHAN_B, sine_table[(uint16_t)((phase>>23) & 0x1FF)]); // use last 8 bits of phase for pwm value
+
+            sstv_time += SSTV_TIME_PER_SAMPLE;
+            if(!sstv_running || sstv_time < sstv_next) continue;
+
+            switch (sstv_seq){
+                case 0:
+                    sstv_time = 0; header_ptr = 0; vis_parity = 0;
+                    // vis_sr = 44;
+                    phase_inc = SSTV_HEADER[header_ptr++];
+                    sstv_next = (float)SSTV_HEADER[header_ptr++];
+                    sstv_seq++;
+                    break;
+                case 1:
+                    if(SSTV_HEADER[header_ptr + 1] == 0){
+                        sstv_seq++; header_ptr = 0;
+                    } else {
+                        phase_inc = SSTV_HEADER[header_ptr++];
+                        sstv_next = (float)SSTV_HEADER[header_ptr++];
+                    }
+                    break;
+                case 2:
+                    if(header_ptr == 7) {
+                        header_ptr = 0;
+                        phase_inc = vis_parity ? SSTV_FT(1100) : SSTV_FT(1300);
+                        sstv_next += 30.0; sstv_seq++;
+                    } else {
+                        phase_inc = (vis_sr & 0x01) ? (vis_parity ^= 0x01, SSTV_FT(1100)) : SSTV_FT(1300);
+                        vis_sr >>= 1;
+                        sstv_next += 30.0; header_ptr++;
+                    }
+                    break;
+                case 3:
+                    phase_inc = SSTV_FT(1200);
+                    sstv_next += 30.0 + SSTV_H_SYNC_TIME;
+                    raster_x = 0; raster_y = 0; sstv_seq = 10;
+                    break;
+                case 10:
+                    if(raster_x == SSTV_WIDTH) {
+                        raster_x = 0;
+                        phase_inc = SSTV_FT(1500);
+                        sstv_next += SSTV_C_SYNC_TIME;
+                        sstv_seq++;
+                    } else {
+                        int G = buff[1 + (raster_x * 3) + (raster_y * SSTV_WIDTH* 3)];
+                        int f = linear_map(G, 0, 255, 1500, 2300);
+                        phase_inc = SSTV_FT(f);
+                        sstv_next += SSTV_PIXEL_TIME; raster_x++;
+                    }
+                    break;
+                case 11:
+                    if (raster_x == SSTV_WIDTH) {
+                        raster_x = 0;
+                        phase_inc = SSTV_FT(1500);
+                        sstv_next += SSTV_C_SYNC_TIME;
+                        sstv_seq++;
+                    } else {
+                        int B = buff[(raster_x * 3) + (raster_y * SSTV_WIDTH * 3)];
+                        int f = linear_map(B, 0, 255, 1500, 2300);
+                        phase_inc = SSTV_FT(f);
+                        sstv_next += SSTV_PIXEL_TIME;
+                        raster_x++;
+                    }
+                    break;
+                case 12:
+                    if (raster_x == SSTV_WIDTH) {
+                        raster_x = 0; raster_y++;
+                        if(raster_y == SSTV_HEIGHT){
+                            sstv_running = false;
+                            sstv_seq = 0; phase_inc = 0; phase = 0;
+                        } else {
+                            phase_inc = SSTV_FT_SYNC;
+                            sstv_next += SSTV_V_SYNC_TIME;
+                            sstv_seq = 10;
+                        }
+                    } else {
+                        int R = buff[2 + (raster_x * 3) + (raster_y * SSTV_WIDTH * 3)];
+                        int f = linear_map(R, 0, 255, 1500, 2300);
+                        phase_inc = SSTV_FT(f);
+                        sstv_next += SSTV_PIXEL_TIME;
+                        raster_x++;
+                    }
+                    break;
+            }
         }
     }
 }
 
-void start_sstv()
+void start_sstv(uint8_t *image_buff, uint32_t image_buff_len)
 {
+    buff = image_buff;
+    buff_len = image_buff_len;
+    
     gpio_set_function(SSTV_PIN, GPIO_FUNC_PWM);
     sstv_pwm_pin_slice = pwm_gpio_to_slice_num(SSTV_PIN);
     sstv_pwm_channel = pwm_gpio_to_channel(SSTV_PIN);
@@ -69,6 +168,10 @@ void start_sstv()
     irq_set_exclusive_handler(SSTV_ALARM_IRQ, phase_inc_handler);
 
     timer_hw->alarm[SSTV_ALARM_NUM] = (uint32_t) (timer_hw->timerawl+SSTV_ALARM_TIME_MS);
+
+    sstv_running = true;
+    phase = 0;
+    phase_inc = SSTV_FT(1000);
 
     pwm_set_enabled(sstv_pwm_pin_slice, true);
     irq_set_enabled(SSTV_ALARM_IRQ, true);

@@ -42,6 +42,31 @@ add_executable(picoSSTV
     include/sstv.h
 )
 
+add_custom_command(
+    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/image_bin.o
+    COMMAND ${CMAKE_COMMAND} -E copy
+            ${CMAKE_CURRENT_LIST_DIR}/image.bin
+            ${CMAKE_CURRENT_BINARY_DIR}/image.bin
+    COMMAND ${CMAKE_OBJCOPY}
+            -I binary
+            -O elf32-littlearm
+            -B arm
+            image.bin
+            image_bin.o
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+    DEPENDS ${CMAKE_CURRENT_LIST_DIR}/image.bin
+)
+
+add_custom_target(image_bin_target
+    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/image_bin.o
+)
+
+add_dependencies(picoSSTV image_bin_target)
+
+target_sources(picoSSTV PRIVATE
+    ${CMAKE_CURRENT_BINARY_DIR}/image_bin.o
+)
+
 pico_set_program_name(picoSSTV "picoSSTV")
 pico_set_program_version(picoSSTV "0.1")
 
