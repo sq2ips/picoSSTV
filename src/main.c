@@ -16,9 +16,10 @@ int main() {
     stdio_init_all();
 
     hard_assert(_binary_image_bin_end-_binary_image_bin_start == SSTV_WIDTH * SSTV_HEIGHT * 3);
-    start_sstv(_binary_image_bin_start);
+    
 
     while (true) {
-        sleep_ms(100);
+        start_sstv(_binary_image_bin_start);
+        while(sstv_running) sleep_ms(1000);
     }
 }

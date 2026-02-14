@@ -41,7 +41,7 @@ static double sstv_next = 0;
 static uint8_t vis_sr = SSTV_VIS_CODE;
 static uint8_t vis_parity;
 static uint8_t header_ptr = 0;
-static bool sstv_running = false;
+bool sstv_running = false;
 
 static const uint8_t *buff = NULL;
 
@@ -63,7 +63,9 @@ static void sampling_thread(){
             pwm_set_chan_level(sstv_pwm_pin_slice, PWM_CHAN_B, sine_table[(uint16_t)((phase>>23) & 0x1FF)]); // use last 8 bits of phase for pwm value
 
             sstv_time += SSTV_TIME_PER_SAMPLE;
-            if(!sstv_running || sstv_time < sstv_next) continue;
+
+            if(!sstv_running) stop_sstv();
+            if(sstv_time < sstv_next) continue;
 
             switch (sstv_seq){
                 case 0:

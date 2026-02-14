@@ -38,5 +38,6 @@ const static uint32_t SSTV_HEADER[] = {SSTV_FT(2300), 100,SSTV_FT(1500), 100, SS
 
 void start_sstv(const uint8_t image_buff[]);
 void stop_sstv();
+extern bool sstv_running;
 
 #endif
