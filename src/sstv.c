@@ -62,13 +62,13 @@ void start_sstv()
     pwm_set_clkdiv(sstv_pwm_pin_slice, SSTV_PWM_CLKDIV);
     pwm_set_wrap(sstv_pwm_pin_slice, SSTV_PWM_WRAP);
 
-    // pwm_set_chan_level(sstv_pwm_pin_slice, sstv_pwm_channel, 0);
+    pwm_set_chan_level(sstv_pwm_pin_slice, PWM_CHAN_B, 0);
     pwm_set_counter(sstv_pwm_pin_slice, 0);
 
     hw_set_bits(&timer_hw->inte, 1u << SSTV_ALARM_NUM);
     irq_set_exclusive_handler(SSTV_ALARM_IRQ, phase_inc_handler);
 
-    timer_hw->alarm[SSTV_ALARM_NUM] = (uint32_t) (timer_hw->timerawl); // trigger first alarm immediately
+    timer_hw->alarm[SSTV_ALARM_NUM] = (uint32_t) (timer_hw->timerawl+SSTV_ALARM_TIME_MS);
 
     pwm_set_enabled(sstv_pwm_pin_slice, true);
     irq_set_enabled(SSTV_ALARM_IRQ, true);
