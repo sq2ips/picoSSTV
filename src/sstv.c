@@ -43,8 +43,7 @@ static uint8_t vis_parity;
 static uint8_t header_ptr = 0;
 static bool sstv_running = false;
 
-static uint8_t *buff = NULL;
-static uint32_t buff_len = 0;
+static const uint8_t *buff = NULL;
 
 #define linear_map(x, in_min, in_max, out_min, out_max) ((x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min)
 
@@ -79,7 +78,7 @@ static void sampling_thread(){
                         sstv_seq++; header_ptr = 0;
                     } else {
                         phase_inc = SSTV_HEADER[header_ptr++];
-                        sstv_next = (float)SSTV_HEADER[header_ptr++];
+                        sstv_next += (float)SSTV_HEADER[header_ptr++];
                     }
                     break;
                 case 2:
@@ -149,10 +148,9 @@ static void sampling_thread(){
     }
 }
 
-void start_sstv(uint8_t *image_buff, uint32_t image_buff_len)
+void start_sstv(const uint8_t image_buff[])
 {
     buff = image_buff;
-    buff_len = image_buff_len;
     
     gpio_set_function(SSTV_PIN, GPIO_FUNC_PWM);
     sstv_pwm_pin_slice = pwm_gpio_to_slice_num(SSTV_PIN);

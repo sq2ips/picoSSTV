@@ -36,7 +36,7 @@ const static uint32_t SSTV_HEADER[] = {SSTV_FT(2300), 100,SSTV_FT(1500), 100, SS
 #define SSTV_VISIBLE_PIXELS_TIME (SSTV_LINE_TIME - SSTV_V_SYNC_TIME - SSTV_LEFT_MARIGIN_TIME - (2*SSTV_C_SYNC_TIME))
 #define SSTV_PIXEL_TIME (SSTV_VISIBLE_PIXELS_TIME /  (SSTV_WIDTH * 3))
 
-void start_sstv(uint8_t *image_buff, uint32_t image_buff_len);
+void start_sstv(const uint8_t image_buff[]);
 void stop_sstv();
 
 #endif

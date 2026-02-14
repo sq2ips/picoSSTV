@@ -33,6 +33,8 @@ project(picoSSTV C CXX ASM)
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
 
+string(APPEND CMAKE_EXE_LINKER_FLAGS "-Wl,--print-memory-usage")
+
 # Add executable. Default name is the project name, version 0.1
 
 include_directories(include)
@@ -82,6 +84,7 @@ target_link_libraries(picoSSTV
 target_include_directories(picoSSTV PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}
 )
+
 
 pico_add_extra_outputs(picoSSTV)
 

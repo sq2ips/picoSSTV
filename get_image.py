@@ -34,7 +34,7 @@ with open(output_file, "wb") as f:
     for y in range(height):
         for x in range(width):
             r, g, b = pixels[x, y]
-            f.write(bytes([r, g, b]))
+            f.write(bytes([b, g, r]))
 
 print(f"Conversion complete!")
 print(f"Resolution: {width}x{height}")
