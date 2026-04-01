@@ -42,7 +42,7 @@ void radio_init(){
     printf("Radio freq %.3f MHz, ppm %.1f\n");
 
     uint16_t dev = (uint16_t)(RADIO_DEV / RADIO_STEP);
-    print("deviation %d, %.0f Hz", dev, dev * RADIO_STEP);
+    printf("deviation %d, %.0f Hz", dev, dev * RADIO_STEP);
     radio_write(REG_FDEV_MSB, (dev >> 8) & 0x3F);
     radio_write(REG_FDEV_LSB, dev & 0xFF);
 
