@@ -41,6 +41,8 @@ include_directories(include)
 add_executable(picoSSTV 
     src/main.c
     src/sstv.c
+    src/radio.c
+    include/radio.h
     include/sstv.h
 )
 
@@ -78,7 +80,7 @@ pico_enable_stdio_usb(picoSSTV 1)
 
 # Add the standard library to the build
 target_link_libraries(picoSSTV
-        pico_stdlib hardware_pwm pico_multicore)
+        pico_stdlib hardware_pwm hardware_spi pico_multicore)
 
 # Add the standard include files to the build
 target_include_directories(picoSSTV PRIVATE
