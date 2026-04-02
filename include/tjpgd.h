@@ -8,7 +8,7 @@
 extern "C" {
 #endif
 
-#include "images.h"
+#include "tjpgdcnf.h"
 #include <string.h>
 
 #if defined(_WIN32)	/* VC++ or some compiler without stdint.h */

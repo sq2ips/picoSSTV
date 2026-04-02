@@ -26,8 +26,6 @@
 
 #include "tjpgd.h"
 
-#include <stdio.h>
-
 
 #if JD_FASTDECODE == 2
 #define HUFF_BIT	10	/* Bit length to apply fast huffman decode */
@@ -1152,6 +1150,7 @@ JRESULT jd_decomp (
 
 	jd->dcv[2] = jd->dcv[1] = jd->dcv[0] = 0;	/* Initialize DC values */
 	rst = rsc = 0;
+
 	rc = JDR_OK;
 	for (y = 0; y < jd->height; y += my) {		/* Vertical loop of MCUs */
 		for (x = 0; x < jd->width; x += mx) {	/* Horizontal loop of MCUs */
@@ -1160,14 +1159,10 @@ JRESULT jd_decomp (
 				if (rc != JDR_OK) return rc;
 				rst = 1;
 			}
-			printf("x");
 			rc = mcu_load(jd);					/* Load an MCU (decompress huffman coded stream, dequantize and apply IDCT) */
 			if (rc != JDR_OK) return rc;
-			printf("x");
 			rc = mcu_output(jd, outfunc, x, y);	/* Output the MCU (YCbCr to RGB, scaling and output) */
-			printf("x");
 			if (rc != JDR_OK) return rc;
-			printf("x");
 		}
 	}
 
