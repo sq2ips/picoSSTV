@@ -103,7 +103,7 @@ static void sampling_thread(){
                 sstv_next += SSTV_C_SYNC_TIME;
                 sstv_seq++;
             } else {
-                int B = buff[(raster_x * 3) + (raster_y * SSTV_WIDTH * 3)];
+                int B = buff[2 + (raster_x * 3) + (raster_y * SSTV_WIDTH * 3)];
                 int f = linear_map(B, 0, 255, 1500, 2300);
                 phase_inc = SSTV_FT(f);
                 sstv_next += SSTV_PIXEL_TIME;
@@ -122,7 +122,7 @@ static void sampling_thread(){
                     sstv_seq = 10;
                 }
             } else {
-                int R = buff[2 + (raster_x * 3) + (raster_y * SSTV_WIDTH * 3)];
+                int R = buff[(raster_x * 3) + (raster_y * SSTV_WIDTH * 3)];
                 int f = linear_map(R, 0, 255, 1500, 2300);
                 phase_inc = SSTV_FT(f);
                 sstv_next += SSTV_PIXEL_TIME;

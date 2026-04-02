@@ -20,10 +20,10 @@ uint8_t image_buff[SSTV_WIDTH*SSTV_HEIGHT*3];
 
 int main() {
     stdio_init_all();
-    while(!stdio_usb_connected()){sleep_ms(10);}
+    //while(!stdio_usb_connected()){sleep_ms(10);}
     printf("picoSSTV starting...\n");
 
-    //radio_init();
+    radio_init();
     
     //radio_write(REG_OP_MODE, MODE_TX);
 
@@ -37,6 +37,14 @@ int main() {
         printf("%c", image_buff[i]);
     }*/
     
+    radio_write(REG_OP_MODE, MODE_TX);
+    sleep_ms(SSTV_WAIT);
+    start_sstv(image_buff);
+    while(sstv_running) sleep_ms(100);
+    sleep_ms(SSTV_WAIT);
+    radio_write(REG_OP_MODE, MODE_SLEEP);
+    sleep_ms(SSTV_DELAY);
+
     while (true) {
 
         /*for(uint8_t cnt = 0; cnt<SSTV_COUNT; cnt++){

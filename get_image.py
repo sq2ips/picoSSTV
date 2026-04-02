@@ -32,7 +32,7 @@ else:
 
 
 print("Statting conversion...")
-# Write raw RGB888 binary
+
 with open(output_file, "wb") as f:
     for img in images:
         pixels = img.load()
