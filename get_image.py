@@ -14,7 +14,7 @@ print(f"Found {len(files)} total files.")
 images = []
 for file in files:
         try:
-            img = Image.open(file)
+            img = Image.open(f"images/{file}")
             img = img.convert("RGB")
             width, height = img.size
             if width != w or height != h:
@@ -22,7 +22,7 @@ for file in files:
             images.append(img)
         except Exception as e:
             print(f"Couldn't load image {file}: {e}")
-        finally:
+        else:
              print(f"Loaded image {file}.")
 
 if images == []:
@@ -35,12 +35,7 @@ print("Statting conversion...")
 
 with open(output_file, "wb") as f:
     for img in images:
-        pixels = img.load()
-        for y in range(height):
-            for x in range(width):
-                r, g, b = pixels[x, y]
-                f.write(bytes([b, g, r]))
+        img.save(f, format="JPEG", qualty=100, subsampling=0)
 
 print(f"Conversion complete!")
 print(f"Output file: {output_file}")
-print(f"Total bytes written: {width * height * 3 * len(images)}")
