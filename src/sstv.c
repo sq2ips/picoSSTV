@@ -5,6 +5,7 @@
 #include "pico/multicore.h"
 
 #include "sstv.h"
+#include "config.h"
 
 static const uint8_t sine_table[] = {
     127, 129, 130, 132, 133, 135, 136, 138, 139, 141, 143, 144, 146, 147, 149, 150, 152, 153, 155, 156, 158, 159, 161, 163, 164, 166, 167, 168, 170,
@@ -148,9 +149,9 @@ void start_sstv(const uint8_t image_buff[])
 {
     buff = image_buff;
     
-    gpio_set_function(SSTV_PIN, GPIO_FUNC_PWM);
-    sstv_pwm_pin_slice = pwm_gpio_to_slice_num(SSTV_PIN);
-    sstv_pwm_channel = pwm_gpio_to_channel(SSTV_PIN);
+    gpio_set_function(RADIO_DIO2, GPIO_FUNC_PWM);
+    sstv_pwm_pin_slice = pwm_gpio_to_slice_num(RADIO_DIO2);
+    sstv_pwm_channel = pwm_gpio_to_channel(RADIO_DIO2);
 
     pwm_set_clkdiv(sstv_pwm_pin_slice, SSTV_PWM_CLKDIV);
     pwm_set_wrap(sstv_pwm_pin_slice, SSTV_PWM_WRAP);

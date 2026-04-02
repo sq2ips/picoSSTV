@@ -1,3 +1,6 @@
+#ifndef _RADIO_H
+#define _RADIO_H
+
 #define REG_FIFO           0x00
 #define REG_OP_MODE        0x01
 #define REG_BITRATE_MSB    0x02
@@ -19,10 +22,15 @@
 #define REG_FIFO_THRESH    0x35
 #define REG_DIO_MAPPING1   0x40
 #define REG_VERSION        0x42
-#define REG_PA_DAC         0x84
+#define REG_PA_DAC         0x4D
 
 #define MODE_SLEEP  0x00
 #define MODE_STDBY  0x01
 #define MODE_TX     0x03
 
 #define RADIO_STEP 61.035f
+
+void radio_init();
+void radio_write(uint8_t reg, uint8_t data);
+
+#endif

@@ -6,7 +6,7 @@
 #include "radio.h"
 #include "config.h"
 
-uint8_t radio_read(uint8_t reg){
+static uint8_t radio_read(uint8_t reg){
     uint8_t data_tx[2] = {reg & 0x7F, 0};
     uint8_t data_rx[2];
     gpio_put(RADIO_CS, 0);
@@ -22,7 +22,32 @@ void radio_write(uint8_t reg, uint8_t data){
     gpio_put(RADIO_CS, 1);
 }
 
+static void radio_set_bits(uint8_t reg, uint8_t mask){
+    radio_write(reg, radio_read(reg) | mask);
+}
+
+static void radio_reset_bits(uint8_t reg, uint8_t mask){
+    radio_write(reg, radio_read(reg) & (~mask));
+}
+
+static void radio_write_mask(uint8_t reg, uint8_t data, uint8_t mask){
+    radio_write(reg, (radio_read(reg) & (~mask)) | (data & mask));
+}
+
 void radio_init(){
+    spi_init(spi1, 10000000);
+    gpio_set_function(RADIO_SCK, GPIO_FUNC_SPI);
+    gpio_set_function(RADIO_MOSI, GPIO_FUNC_SPI);
+    gpio_set_function(RADIO_MISO, GPIO_FUNC_SPI);
+    
+    gpio_init(RADIO_CS);
+    gpio_set_dir(RADIO_CS, GPIO_OUT);
+    gpio_put(RADIO_CS, 1);
+    
+    gpio_init(RADIO_RST);
+    gpio_set_dir(RADIO_RST, GPIO_OUT);
+    gpio_put(RADIO_RST, 1);
+
     gpio_put(RADIO_RST, 0);
     sleep_ms(10);
     gpio_put(RADIO_RST, 1);
@@ -39,22 +64,23 @@ void radio_init(){
     radio_write(REG_FRF_MID, (freq_r >> 8) & 0xFF);
     radio_write(REG_FRF_LSB, freq_r & 0xFF);
 
-    printf("Radio freq %.3f MHz, ppm %.1f\n");
+    printf("Radio freq %.3f MHz, ppm %.1f\n", freq/1000000.0, RADIO_PPM_CORR);
 
     uint16_t dev = (uint16_t)(RADIO_DEV / RADIO_STEP);
-    printf("deviation %d, %.0f Hz", dev, dev * RADIO_STEP);
+    printf("deviation %d: %.0f Hz\n", dev, dev * RADIO_STEP);
     radio_write(REG_FDEV_MSB, (dev >> 8) & 0x3F);
     radio_write(REG_FDEV_LSB, dev & 0xFF);
 
-    radio_write(REG_PA_CONFIG, (0b10000000 | RADIO_PA_LEVEL) | (RADIO_PA_MAX << 4));
+    radio_set_bits(REG_PA_CONFIG, 0b10000000);
+    radio_write_mask(REG_PA_CONFIG, RADIO_PA_LEVEL, 0b00001111);
+    radio_write_mask(REG_PA_CONFIG, RADIO_PA_MAX << 4, 0b01110000);
     radio_write(REG_PA_DAC, RADIO_PA_BOOST ? 0x87: 0x84);
 
-    radio_write(REG_PA_RAMP, 0x00); // Disable shaping (for now)
+    printf("Power settings: level %d/15, max %d/7, boost %d\n", RADIO_PA_LEVEL, RADIO_PA_MAX, RADIO_PA_BOOST);
 
-    radio_write(REG_PACKET_CONFIG2, 0X00); // Continuous mode
+    radio_reset_bits(REG_PA_RAMP, 0b01100000); // Disable shaping (for now)
 
-    radio_write(REG_OP_MODE, MODE_STDBY);
-    sleep_ms(10);
+    radio_reset_bits(REG_PACKET_CONFIG2, 0b01000000); // Continuous mode
 
     printf("init OK");
 }

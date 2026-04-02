@@ -55,6 +55,7 @@ add_custom_command(
             -I binary
             -O elf32-littlearm
             -B arm
+            --rename-section .data=.rodata,alloc,load,readonly,data,contents
             image.bin
             image_bin.o
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
