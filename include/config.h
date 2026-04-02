@@ -17,4 +17,7 @@
 #define RADIO_PA_LEVEL 1 // 0-15
 #define RADIO_PA_BOOST 0 // bool
 
+#define SSTV_WAIT 100
+#define SSTV_DELAY 5000
+
 #endif

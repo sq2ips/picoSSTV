@@ -25,17 +25,16 @@ int main() {
     radio_write(REG_OP_MODE, MODE_TX);
 
     hard_assert(_binary_image_bin_end-_binary_image_bin_start == (SSTV_BUFF_LEN * SSTV_COUNT));
-    
-    radio_write(REG_OP_MODE, MODE_TX);
-    sleep_ms(500);
+
     while (true) {
         for(uint8_t cnt = 0; cnt<SSTV_COUNT; cnt++){
+            radio_write(REG_OP_MODE, MODE_TX);
+            sleep_ms(SSTV_WAIT);
             start_sstv(_binary_image_bin_start+cnt*SSTV_BUFF_LEN);
-            while(sstv_running) sleep_ms(1000);
+            while(sstv_running) sleep_ms(100);
+            sleep_ms(SSTV_WAIT);
+            radio_write(REG_OP_MODE, MODE_SLEEP);
+            sleep_ms(SSTV_DELAY);
         }
-        //radio_write(REG_OP_MODE, MODE_TX);
-        //sleep_ms(500);
-        //radio_write(REG_OP_MODE, MODE_SLEEP);
-        //sleep_ms(500);
     }
 }
