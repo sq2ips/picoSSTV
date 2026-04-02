@@ -14,8 +14,9 @@
 extern const uint8_t _binary_image_bin_start[];
 extern const uint8_t _binary_image_bin_end[];
 size_t _binary_image_bin_len = 0;
-
 #define SSTV_COUNT (_binary_image_bin_len / SSTV_BUFF_LEN)
+
+uint8_t image_buff[SSTV_WIDTH*SSTV_HEIGHT*3];
 
 int main() {
     stdio_init_all();
@@ -29,14 +30,12 @@ int main() {
     //hard_assert(_binary_image_bin_len == (SSTV_BUFF_LEN * SSTV_COUNT));
     _binary_image_bin_len = _binary_image_bin_end-_binary_image_bin_start;
     printf("%lu\n",_binary_image_bin_len);
-    RGBImage img;
-    img.r = malloc(SSTV_WIDTH*SSTV_HEIGHT);
-    img.g = malloc(SSTV_WIDTH*SSTV_HEIGHT);
-    img.b = malloc(SSTV_WIDTH*SSTV_HEIGHT);
 
-    hard_assert(img.r !=0 && img.g !=0 && img.b !=0);
-    
-    decode_image(&img, _binary_image_bin_start, _binary_image_bin_len);
+    decode_image(image_buff, _binary_image_bin_start, _binary_image_bin_len);
+    printf("%d\n", image_buff[sizeof(image_buff)-1]);
+    /*for(size_t i = 0; i<sizeof(image_buff); i++){
+        printf("%c", image_buff[i]);
+    }*/
     
     while (true) {
 

@@ -48,6 +48,7 @@ add_executable(picoSSTV
     include/sstv.h
     include/images.h
     include/tjpgd.h
+    include/tjpgdcnf.h
 )
 
 add_custom_command(
