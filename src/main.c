@@ -9,25 +9,38 @@
 #include "sstv.h"
 #include "radio.h"
 #include "config.h"
+#include "images.h"
 
 extern const uint8_t _binary_image_bin_start[];
 extern const uint8_t _binary_image_bin_end[];
+size_t _binary_image_bin_len = 0;
 
-#define SSTV_COUNT ((_binary_image_bin_end-_binary_image_bin_start) / SSTV_BUFF_LEN)
+#define SSTV_COUNT (_binary_image_bin_len / SSTV_BUFF_LEN)
 
 int main() {
     stdio_init_all();
-    //while(!stdio_usb_connected()){sleep_ms(10);}
+    while(!stdio_usb_connected()){sleep_ms(10);}
     printf("picoSSTV starting...\n");
 
-    radio_init();
+    //radio_init();
     
-    radio_write(REG_OP_MODE, MODE_TX);
+    //radio_write(REG_OP_MODE, MODE_TX);
 
-    hard_assert(_binary_image_bin_end-_binary_image_bin_start == (SSTV_BUFF_LEN * SSTV_COUNT));
+    //hard_assert(_binary_image_bin_len == (SSTV_BUFF_LEN * SSTV_COUNT));
+    _binary_image_bin_len = _binary_image_bin_end-_binary_image_bin_start;
+    printf("%lu\n",_binary_image_bin_len);
+    RGBImage img;
+    img.r = malloc(SSTV_WIDTH*SSTV_HEIGHT);
+    img.g = malloc(SSTV_WIDTH*SSTV_HEIGHT);
+    img.b = malloc(SSTV_WIDTH*SSTV_HEIGHT);
 
+    hard_assert(img.r !=0 && img.g !=0 && img.b !=0);
+    
+    decode_image(&img, _binary_image_bin_start, _binary_image_bin_len);
+    
     while (true) {
-        for(uint8_t cnt = 0; cnt<SSTV_COUNT; cnt++){
+
+        /*for(uint8_t cnt = 0; cnt<SSTV_COUNT; cnt++){
             radio_write(REG_OP_MODE, MODE_TX);
             sleep_ms(SSTV_WAIT);
             start_sstv(_binary_image_bin_start+cnt*SSTV_BUFF_LEN);
@@ -35,6 +48,6 @@ int main() {
             sleep_ms(SSTV_WAIT);
             radio_write(REG_OP_MODE, MODE_SLEEP);
             sleep_ms(SSTV_DELAY);
-        }
+        }*/
     }
 }

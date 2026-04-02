@@ -82,5 +82,5 @@ void radio_init(){
 
     radio_reset_bits(REG_PACKET_CONFIG2, 0b01000000); // Continuous mode
 
-    printf("init OK");
+    printf("init OK\n");
 }
