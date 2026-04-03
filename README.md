@@ -29,7 +29,11 @@ The RPI Pico should be wired to the SX1276 module accordingly:
 Images are stored in Flash memory in RGB565 format. It allows for 13 maximum images, that is enough for most SSTV events. All images should be stored in `images/` directory, then the `get_images.py` script should be run that will save all of them in a combined binary file. The SSTV mode is Martin 1, the standard resolution is 320x240 pixels, images should be loaded in this resolution. They can also be in higher multiples of it, sustaining 4:3 ratio, they will get automatically converted.
 
 # Compiling
+
+
 The code can be compiled by installing the RPI Pico SDK and VS Code extension and running the build procedure.
 
 # Images
 
+![2026-04-02-13-30-26-034](https://github.com/user-attachments/assets/00fd1771-06e6-407c-83df-d471dd7539fc)
+<img width="642" height="845" alt="image" src="https://github.com/user-attachments/assets/0d3f75e2-7922-456e-ae1f-11bc0237589c" />
