@@ -9,7 +9,7 @@
 #define RADIO_DIO2      15
 
 #define RADIO_SSTV_FREQ 435100000UL
-#define RADIO_PPM_CORR 0.0f
+#define RADIO_PPM_CORR -9.0f
 
 #define RADIO_DEV 1500
 
