@@ -92,7 +92,7 @@ static void sampling_thread(){
             } else {
                 uint16_t rgb565 = *(uint16_t *)(buff+2*(raster_x+raster_y*SSTV_WIDTH));
                 uint8_t G = (rgb565 >> 5) & 0x3F; // 6 bits
-                G = (G * 255) / 63; // scale to 8 bits
+                G = (uint32_t)(G * 259 + 33) >> 6; // scale to 8 bits
                 int f = linear_map(G, 0, 255, 1500, 2300);
                 phase_inc = SSTV_FT(f);
                 sstv_next += SSTV_PIXEL_TIME; raster_x++;
@@ -107,7 +107,7 @@ static void sampling_thread(){
             } else {
                 uint16_t rgb565 = *(uint16_t *)(buff+2*(raster_x+raster_y*SSTV_WIDTH));
                 uint8_t B =  rgb565 & 0x1F; // 5 bits
-                B = (B * 255) / 31; // scale to 8 bits
+                B = (uint32_t)(B * 527 + 23) >> 6; // scale to 8 bits
                 int f = linear_map(B, 0, 255, 1500, 2300);
                 phase_inc = SSTV_FT(f);
                 sstv_next += SSTV_PIXEL_TIME;
@@ -128,7 +128,7 @@ static void sampling_thread(){
             } else {
                 uint16_t rgb565 = *(uint16_t *)(buff+2*(raster_x+raster_y*SSTV_WIDTH));
                 uint8_t R = (rgb565 >> 11) & 0x1F; // 5 bits
-                R = (R * 255) / 31; // scale to 8 bits
+                R = (uint32_t)(R * 527 + 23) >> 6; // scale to 8 bits
                 int f = linear_map(R, 0, 255, 1500, 2300);
                 phase_inc = SSTV_FT(f);
                 sstv_next += SSTV_PIXEL_TIME;

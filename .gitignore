@@ -1,2 +1,4 @@
 build
 !.vscode/*
+image.bin
+images/*
