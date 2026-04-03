@@ -42,13 +42,8 @@ add_executable(picoSSTV
     src/main.c
     src/sstv.c
     src/radio.c
-    src/images.c
-    src/tjpgd.c
     include/radio.h
     include/sstv.h
-    include/images.h
-    include/tjpgd.h
-    include/tjpgdcnf.h
 )
 
 add_custom_command(

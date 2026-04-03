@@ -1,4 +1,6 @@
 from PIL import Image
+import numpy as np
+import struct
 import sys
 import os
 
@@ -18,8 +20,10 @@ for file in files:
             img = img.convert("RGB")
             width, height = img.size
             if width != w or height != h:
-                raise Exception(f"Incorrect resolution of file {file}, expected {w}x{h}, got {width}x{height}.")
-            images.append(img)
+                #raise Exception(f"Incorrect resolution of file {file}, expected {w}x{h}, got {width}x{height}.")
+                print(f"Warning: expected {w}x{h} resolution, got: {width}x{height}, scaling...")
+                img = img.resize((320, 240))
+            images.append(np.array(img))
         except Exception as e:
             print(f"Couldn't load image {file}: {e}")
         else:
@@ -34,17 +38,14 @@ else:
 print("Combining images..")
 
 with open(output_file, "wb") as f:
-    print(f"Saving number of images {len(images)}, bytes: {len(images).to_bytes(1)}")
-    f.write(len(images).to_bytes(1))
     for img in images:
-        with open('tmp', 'wb') as tmp:
-            img.save(tmp, format="JPEG", qualty=100, subsampling=0)
-        size = os.stat('tmp').st_size
-        print(f"Size of image: {size} (bytes: {size.to_bytes(4,byteorder='big')})")
-        f.write(size.to_bytes(4,byteorder='big'))
-        img.save(f, format="JPEG", qualty=100, subsampling=0)
+        r = (img[:, :, 0] >> 3).astype(np.uint16)
+        g = (img[:, :, 1] >> 2).astype(np.uint16)
+        b = (img[:, :, 2] >> 3).astype(np.uint16)
+        rgb565 = (r << 11) | (g << 5) | b
+        for pixel in rgb565.flatten():
+            f.write(struct.pack("<H", pixel))
 
-os.remove('tmp')
 
 print(f"Wrote {os.stat(output_file).st_size} bytes")
 

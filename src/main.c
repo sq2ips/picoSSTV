@@ -9,29 +9,26 @@
 #include "sstv.h"
 #include "radio.h"
 #include "config.h"
-#include "images.h"
 
-uint8_t image_buff[SSTV_WIDTH*SSTV_HEIGHT*3];
+extern const uint8_t _binary_image_bin_start[];
+extern const uint8_t _binary_image_bin_end[];
+#define BINARY_IMAGE_BIN_LEN (_binary_image_bin_end-_binary_image_bin_start)
+#define SSTV_COUNT (BINARY_IMAGE_BIN_LEN/SSTV_BUFF_LEN)
 
 int main() {
     stdio_init_all();
-    while(!stdio_usb_connected()){sleep_ms(10);}
+    //while(!stdio_usb_connected()){sleep_ms(10);}
     printf("picoSSTV starting...\n");
 
     radio_init();
 
-    uint8_t images_cnt = get_images_count();
-    printf("img cnt: %d\n", images_cnt);
+    hard_assert(SSTV_BUFF_LEN*SSTV_COUNT == BINARY_IMAGE_BIN_LEN);
 
     while (true) {
-        for(uint8_t cnt = 0; cnt<images_cnt; cnt++){
-            uint8_t *jpeg_buff = NULL;
-            uint8_t jpeg_buff_size = get_image_data(cnt, jpeg_buff);
-            decode_image(image_buff, jpeg_buff, jpeg_buff_size);
-            printf("img size: %lu\n", jpeg_buff_size);
+        for(uint8_t cnt = 0; cnt<SSTV_COUNT; cnt++){
             radio_write(REG_OP_MODE, MODE_TX);
             sleep_ms(SSTV_WAIT);
-            start_sstv(image_buff);
+            start_sstv(_binary_image_bin_start+cnt*SSTV_BUFF_LEN);
             while(sstv_running) sleep_ms(100);
             sleep_ms(SSTV_WAIT);
             radio_write(REG_OP_MODE, MODE_SLEEP);
