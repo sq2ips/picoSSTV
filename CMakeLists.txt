@@ -81,7 +81,7 @@ pico_enable_stdio_usb(picoSSTV 1)
 
 # Add the standard library to the build
 target_link_libraries(picoSSTV
-        pico_stdlib hardware_pwm hardware_spi pico_multicore)
+        pico_stdlib hardware_pwm hardware_spi hardware_watchdog pico_multicore)
 
 # Add the standard include files to the build
 target_include_directories(picoSSTV PRIVATE
