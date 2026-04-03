@@ -1,4 +1,5 @@
 #include "tjpgd.h"
+#include <stdlib.h>
 #include "pico/stdlib.h"
 #include <stdint.h>
 #include <stdio.h>
@@ -9,6 +10,10 @@
 const uint8_t *jpeg_buff = NULL;
 size_t jpeg_size = 0;
 uint8_t *buff_out = NULL;
+
+extern const uint8_t _binary_image_bin_start[];
+extern const uint8_t _binary_image_bin_end[];
+size_t _binary_image_bin_len = 0;
 
 // Input function (reads from memory)
 size_t input_func(JDEC* jd, uint8_t* buff, unsigned int nbyte) {
@@ -63,4 +68,23 @@ void decode_image(uint8_t *out_buff, const uint8_t *in_buff, size_t size) {
     }else{
         printf("Decoded successfully!\n");
     }
+}
+
+uint8_t get_images_count(void){
+    return *(uint8_t *)_binary_image_bin_start;
+}
+
+size_t get_image_data(uint8_t num, const uint8_t *buff){
+    hard_assert(num<get_images_count());
+
+    size_t size = 0;
+    for(uint8_t i = 0; i<=num; i++){
+        printf("%d %d %d %d", *(uint8_t *)(_binary_image_bin_start+1), *(uint8_t *)(_binary_image_bin_start+2), *(uint8_t *)(_binary_image_bin_start+3), *(uint8_t *)(_binary_image_bin_start+4));
+        size = *(uint32_t *)(_binary_image_bin_start+1+size+i*4);
+        printf("size: %lu\n", size);
+    }
+
+    buff = (uint8_t *)(_binary_image_bin_start+1+size+num*4+4);
+
+    return size;
 }

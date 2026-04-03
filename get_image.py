@@ -31,11 +31,22 @@ else:
      print(f"Loaded {len(images)} images.")
 
 
-print("Statting conversion...")
+print("Combining images..")
 
 with open(output_file, "wb") as f:
+    print(f"Saving number of images {len(images)}, bytes: {len(images).to_bytes(1)}")
+    f.write(len(images).to_bytes(1))
     for img in images:
+        with open('tmp', 'wb') as tmp:
+            img.save(tmp, format="JPEG", qualty=100, subsampling=0)
+        size = os.stat('tmp').st_size
+        print(f"Size of image: {size} (bytes: {size.to_bytes(4,byteorder='big')})")
+        f.write(size.to_bytes(4,byteorder='big'))
         img.save(f, format="JPEG", qualty=100, subsampling=0)
+
+os.remove('tmp')
+
+print(f"Wrote {os.stat(output_file).st_size} bytes")
 
 print(f"Conversion complete!")
 print(f"Output file: {output_file}")

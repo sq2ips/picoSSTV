@@ -11,50 +11,31 @@
 #include "config.h"
 #include "images.h"
 
-extern const uint8_t _binary_image_bin_start[];
-extern const uint8_t _binary_image_bin_end[];
-size_t _binary_image_bin_len = 0;
-#define SSTV_COUNT (_binary_image_bin_len / SSTV_BUFF_LEN)
-
 uint8_t image_buff[SSTV_WIDTH*SSTV_HEIGHT*3];
 
 int main() {
     stdio_init_all();
-    //while(!stdio_usb_connected()){sleep_ms(10);}
+    while(!stdio_usb_connected()){sleep_ms(10);}
     printf("picoSSTV starting...\n");
 
     radio_init();
-    
-    //radio_write(REG_OP_MODE, MODE_TX);
 
-    //hard_assert(_binary_image_bin_len == (SSTV_BUFF_LEN * SSTV_COUNT));
-    _binary_image_bin_len = _binary_image_bin_end-_binary_image_bin_start;
-    printf("%lu\n",_binary_image_bin_len);
-
-    decode_image(image_buff, _binary_image_bin_start, _binary_image_bin_len);
-    printf("%d\n", image_buff[sizeof(image_buff)-1]);
-    /*for(size_t i = 0; i<sizeof(image_buff); i++){
-        printf("%c", image_buff[i]);
-    }*/
-    
-    radio_write(REG_OP_MODE, MODE_TX);
-    sleep_ms(SSTV_WAIT);
-    start_sstv(image_buff);
-    while(sstv_running) sleep_ms(100);
-    sleep_ms(SSTV_WAIT);
-    radio_write(REG_OP_MODE, MODE_SLEEP);
-    sleep_ms(SSTV_DELAY);
+    uint8_t images_cnt = get_images_count();
+    printf("img cnt: %d\n", images_cnt);
 
     while (true) {
-
-        /*for(uint8_t cnt = 0; cnt<SSTV_COUNT; cnt++){
+        for(uint8_t cnt = 0; cnt<images_cnt; cnt++){
+            uint8_t *jpeg_buff = NULL;
+            uint8_t jpeg_buff_size = get_image_data(cnt, jpeg_buff);
+            decode_image(image_buff, jpeg_buff, jpeg_buff_size);
+            printf("img size: %lu\n", jpeg_buff_size);
             radio_write(REG_OP_MODE, MODE_TX);
             sleep_ms(SSTV_WAIT);
-            start_sstv(_binary_image_bin_start+cnt*SSTV_BUFF_LEN);
+            start_sstv(image_buff);
             while(sstv_running) sleep_ms(100);
             sleep_ms(SSTV_WAIT);
             radio_write(REG_OP_MODE, MODE_SLEEP);
             sleep_ms(SSTV_DELAY);
-        }*/
+        }
     }
 }
