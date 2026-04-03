@@ -1,5 +1,5 @@
 # picoSSTV
-This project is a SSTV (Martin 1) transmitter utilizing Raspberry Pi Pico and SX1276 module. It is designed to be used on a High Altitude Balloon (flight).
+This project is a SSTV (Martin 1) transmitter utilizing Raspberry Pi Pico and SX1276 module. It is designed to be used on a High Altitude Balloon (HAB) flight.
 
 # Work principle
 The images are packed into Pico memory in RGB565 format. SSTV signal is generated using PWM synthesis technique that achieves nearly pure sine wave on average while still being a fully digital signal. It is then fed into the SX1276 module DIO2 (DATA IN) pin. The module is set to FSK continuous mode, changing frequency by deviation value according to the input signal state. This creates (nearly) perfect FM spectrum modulated with the SSTV signal.
