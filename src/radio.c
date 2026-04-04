@@ -47,7 +47,9 @@ void radio_init(){
     gpio_init(RADIO_RST);
     gpio_set_dir(RADIO_RST, GPIO_OUT);
     gpio_put(RADIO_RST, 1);
+}
 
+void radio_start(){
     gpio_put(RADIO_RST, 0);
     sleep_ms(10);
     gpio_put(RADIO_RST, 1);
@@ -83,4 +85,5 @@ void radio_init(){
     radio_reset_bits(REG_PACKET_CONFIG2, 0b01000000); // Continuous mode
 
     printf("radio init OK\n");
+    sleep_ms(10);
 }

@@ -40,6 +40,7 @@ int main() {
         for(uint8_t cnt = 0; cnt<SSTV_COUNT; cnt++){
             gpio_put(PICO_DEFAULT_LED_PIN, 1);
             printf("Starting SSTV transmission of image %d...\n", cnt);
+            radio_start();
             radio_write(REG_OP_MODE, MODE_TX);
             sleep_wd(SSTV_WAIT);
             start_sstv(_binary_image_bin_start+cnt*SSTV_BUFF_LEN);

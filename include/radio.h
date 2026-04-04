@@ -31,6 +31,7 @@
 #define RADIO_STEP 61.035f
 
 void radio_init();
+void radio_start();
 void radio_write(uint8_t reg, uint8_t data);
 
 #endif
