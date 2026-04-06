@@ -13,6 +13,7 @@ print(f"Expected resolution: {w}x{h}")
 
 files = os.listdir("images/")
 files = [f for f in files if f[0] != '.']
+files = sorted(files)
 print(f"Found {len(files)} total files.")
 images = []
 for file in files:
