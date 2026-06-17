@@ -35,7 +35,7 @@ static void radio_write_mask(uint8_t reg, uint8_t data, uint8_t mask){
 }
 
 void radio_init(){
-    spi_init(spi1, 10000000);
+    spi_init(spi1, RADIO_SPI_FREQ);
     gpio_set_function(RADIO_SCK, GPIO_FUNC_SPI);
     gpio_set_function(RADIO_MOSI, GPIO_FUNC_SPI);
     gpio_set_function(RADIO_MISO, GPIO_FUNC_SPI);

@@ -8,6 +8,8 @@
 #define RADIO_RST       14
 #define RADIO_DIO2      15
 
+#define RADIO_SPI_FREQ 1000000UL
+
 #define RADIO_SSTV_FREQ 435100000UL
 #define RADIO_PPM_CORR -9.0f
 
