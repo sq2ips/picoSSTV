@@ -32,7 +32,7 @@ int main() {
     radio_init();
 
     watchdog_enable(100, 1);
-    printf("Watchdog enabled.");
+    printf("Watchdog enabled.\n");
 
     hard_assert(SSTV_BUFF_LEN*SSTV_COUNT == BINARY_IMAGE_BIN_LEN);
 
@@ -48,7 +48,7 @@ int main() {
             while(sstv_running) sleep_wd(100);
             sleep_wd(SSTV_WAIT);
             radio_write(REG_OP_MODE, MODE_SLEEP);
-            printf("Transmission ended.");
+            printf("Transmission ended.\n");
             sleep_wd(SSTV_DELAY);
         }
     }

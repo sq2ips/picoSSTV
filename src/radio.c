@@ -55,7 +55,9 @@ void radio_start(){
     gpio_put(RADIO_RST, 1);
     sleep_ms(10);
 
-    printf("SX1276 version: 0x%02X\n", radio_read(REG_VERSION));
+    uint8_t radio_ver = radio_read(REG_VERSION);
+    hard_assert(radio_ver != 0);
+    printf("SX1276 version: 0x%02X\n", radio_ver);
 
     radio_write(REG_OP_MODE, MODE_SLEEP);
     sleep_ms(10);
