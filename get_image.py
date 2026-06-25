@@ -7,7 +7,7 @@ import os
 output_file = "image.bin"
 
 w = 320
-h = 240
+h = 256
 
 print(f"Expected resolution: {w}x{h}")
 
@@ -24,7 +24,7 @@ for file in files:
             if width != w or height != h:
                 #raise Exception(f"Incorrect resolution of file {file}, expected {w}x{h}, got {width}x{height}.")
                 print(f"Warning: expected {w}x{h} resolution, got: {width}x{height}, scaling...")
-                img = img.resize((320, 240))
+                img = img.resize((w, h))
             images.append(np.array(img))
         except Exception as e:
             print(f"Couldn't load image {file}: {e}")
