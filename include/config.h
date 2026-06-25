@@ -10,14 +10,16 @@
 
 #define RADIO_SPI_FREQ 1000000UL
 
-#define RADIO_SSTV_FREQ 435100000UL
-#define RADIO_PPM_CORR -9.0f
+#define RADIO_SSTV_FREQ 433400000UL
+#define RADIO_PPM_CORR -4.5f
 
 #define RADIO_DEV 1500
 
 #define RADIO_PA_MAX 7 // 0-7
 #define RADIO_PA_LEVEL 15 // 0-15
 #define RADIO_PA_BOOST 1 // bool
+#define RADIO_OCP_ENABLE 1 // bool
+#define RADIO_OCP 27 // Over current protection 0-31
 
 #define SSTV_WAIT 50
 #define SSTV_DELAY 5000

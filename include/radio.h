@@ -12,6 +12,7 @@
 #define REG_FRF_LSB        0x08
 #define REG_PA_CONFIG      0x09
 #define REG_PA_RAMP        0x0A
+#define REG_OCP            0x0B
 #define REG_IRQ_FLAGS2     0x3F
 #define REG_PREAMBLE_MSB   0x25
 #define REG_PREAMBLE_LSB   0x26

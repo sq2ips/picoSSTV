@@ -79,8 +79,10 @@ void radio_start(){
     radio_write_mask(REG_PA_CONFIG, RADIO_PA_LEVEL, 0b00001111);
     radio_write_mask(REG_PA_CONFIG, RADIO_PA_MAX << 4, 0b01110000);
     radio_write(REG_PA_DAC, RADIO_PA_BOOST ? 0x87: 0x84);
+    radio_write_mask(REG_OCP, RADIO_OCP_ENABLE << 5, 0b00100000);
+    radio_write_mask(REG_OCP, RADIO_OCP, 0b00011111);
 
-    printf("Power settings: level %d/15, max %d/7, boost %d\n", RADIO_PA_LEVEL, RADIO_PA_MAX, RADIO_PA_BOOST);
+    printf("Power settings: level %d/15, max %d/7, boost %d, OCP %d: %d\n", RADIO_PA_LEVEL, RADIO_PA_MAX, RADIO_PA_BOOST, RADIO_OCP_ENABLE, RADIO_OCP);
 
     radio_reset_bits(REG_PA_RAMP, 0b01100000); // Disable shaping (for now)
 
